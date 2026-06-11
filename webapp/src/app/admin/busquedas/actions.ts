@@ -63,3 +63,34 @@ export async function eliminarBusqueda(formData: FormData) {
 
   revalidatePath("/admin/busquedas");
 }
+
+export async function asignarSelector(formData: FormData) {
+  const supabase = await createClient();
+
+  const perfilBusquedaId = Number(val(formData, "perfil_busqueda_id"));
+  const selectorId = Number(val(formData, "selector_id"));
+  const cantidadEsperados = Number(val(formData, "cantidad_postulantes_esperados") || "3");
+  const fechaLimite = nullable(formData, "fecha_limite_entrega");
+
+  const { error } = await supabase.from("asignaciones_busqueda").insert({
+    perfil_busqueda_id: perfilBusquedaId,
+    selector_id: selectorId,
+    cantidad_postulantes_esperados: cantidadEsperados,
+    fecha_limite_entrega: fechaLimite,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/busquedas/${perfilBusquedaId}`);
+}
+
+export async function eliminarAsignacion(formData: FormData) {
+  const supabase = await createClient();
+
+  const id = val(formData, "id");
+  const perfilBusquedaId = val(formData, "perfil_busqueda_id");
+
+  const { error } = await supabase.from("asignaciones_busqueda").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/busquedas/${perfilBusquedaId}`);
+}
