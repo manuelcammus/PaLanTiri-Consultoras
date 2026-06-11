@@ -6,7 +6,7 @@ export default async function ComisionesPage() {
   const { data: comisiones } = await supabase
     .from("comisiones")
     .select(
-      "id, monto_total, monto_selector, monto_empresa, fecha_calculo, fecha_vencimiento_garantia, empresas(nombre), selectores(nombre, apellido), estados_comision(nombre, color)"
+      "id, monto_total, monto_selector, monto_empresa, fecha_calculo, fecha_vencimiento_garantia, empresas(nombre), selectores!comisiones_selector_id_fkey(nombre, apellido), estados_comision(nombre, color)"
     )
     .order("fecha_calculo", { ascending: false });
 

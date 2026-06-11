@@ -17,7 +17,7 @@ export default async function ComisionDetallePage({
     supabase
       .from("comisiones")
       .select(
-        "*, empresas(nombre), selectores(nombre, apellido), selector_sourcing:selector_sourcing_id(nombre, apellido)"
+        "*, empresas(nombre), selectores!comisiones_selector_id_fkey(nombre, apellido), selector_sourcing:selectores!comisiones_selector_sourcing_id_fkey(nombre, apellido)"
       )
       .eq("id", id)
       .single(),
