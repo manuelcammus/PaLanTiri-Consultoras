@@ -7,10 +7,12 @@ import { cerrarSesion } from "@/app/auth/actions";
 
 const NAV_STAFF: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
+  { href: "/admin/kpis", label: "KPIs", icon: "📈" },
   { href: "/admin/empresas", label: "Empresas", icon: "🏢" },
   { href: "/admin/busquedas", label: "Búsquedas", icon: "🔍" },
   { href: "/admin/selectores", label: "Selectores", icon: "🧑‍💼" },
   { href: "/admin/postulantes", label: "Postulantes", icon: "👥" },
+  { href: "/admin/talentos", label: "Base de talentos", icon: "💎" },
   { href: "/admin/kanban", label: "Tablero Kanban", icon: "📋" },
   { href: "/admin/comisiones", label: "Comisiones", icon: "💰" },
   { href: "/admin/garantias", label: "Garantías", icon: "🛡️" },

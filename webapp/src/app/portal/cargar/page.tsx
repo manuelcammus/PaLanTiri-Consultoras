@@ -112,6 +112,15 @@ export default async function CargarPostulantePage({
                 />
               </label>
               <Campo label="Habilidades" name="habilidades" />
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-slate-700">CV (PDF o Word, máx. 10 MB)</span>
+                <input
+                  type="file"
+                  name="cv"
+                  accept=".pdf,.doc,.docx"
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-emerald-700"
+                />
+              </label>
             </div>
           </section>
 

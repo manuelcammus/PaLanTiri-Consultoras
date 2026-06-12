@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { subirCv } from "@/lib/storage/cv";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -23,7 +24,11 @@ export async function guardarPostulante(formData: FormData) {
 
   const id = val(formData, "id");
 
+  const cv = formData.get("cv") as File | null;
+  const cvPath = cv && cv.size > 0 ? await subirCv(cv, "admin") : null;
+
   const data = {
+    ...(cvPath ? { cv_path: cvPath } : {}),
     nombre: val(formData, "nombre"),
     apellido: val(formData, "apellido"),
     email: val(formData, "email"),
@@ -72,4 +77,32 @@ export async function eliminarPostulante(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/postulantes");
+}
+
+export async function agregarNota(formData: FormData) {
+  const supabase = await createClient();
+  const postulanteId = val(formData, "postulante_id");
+
+  const contenido = val(formData, "contenido");
+  if (!contenido) return;
+
+  const { error } = await supabase.from("notas_postulante").insert({
+    postulante_id: Number(postulanteId),
+    titulo: val(formData, "titulo"),
+    contenido,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/postulantes/${postulanteId}`);
+}
+
+export async function eliminarNota(formData: FormData) {
+  const supabase = await createClient();
+  const id = val(formData, "id");
+  const postulanteId = val(formData, "postulante_id");
+
+  const { error } = await supabase.from("notas_postulante").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/admin/postulantes/${postulanteId}`);
 }

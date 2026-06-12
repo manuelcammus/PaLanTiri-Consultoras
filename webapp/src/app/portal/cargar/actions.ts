@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSelectorActual } from "@/lib/auth";
+import { subirCv } from "@/lib/storage/cv";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -30,7 +31,11 @@ export async function cargarPostulante(formData: FormData) {
 
   let postulanteId: number;
 
+  const cv = formData.get("cv") as File | null;
+  const cvPath = cv && cv.size > 0 ? await subirCv(cv, String(selector.id)) : null;
+
   const datosPostulante = {
+    ...(cvPath ? { cv_path: cvPath } : {}),
     nombre: val(formData, "nombre"),
     apellido: val(formData, "apellido"),
     email,

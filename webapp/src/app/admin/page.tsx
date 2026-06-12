@@ -102,9 +102,16 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-slate-400">
-        Próximamente: gráficas de evolución, ranking de selectores y alertas de
-        garantías por vencer.
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 text-center">
+        <p className="text-slate-500">
+          ¿Querés ver el funnel de conversión, el ranking de selectores y las series mensuales?
+        </p>
+        <a
+          href="/admin/kpis"
+          className="mt-3 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+        >
+          📈 Ver panel de KPIs
+        </a>
       </div>
     </div>
   );

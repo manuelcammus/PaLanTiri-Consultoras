@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { urlFirmadaCv } from "@/lib/storage/cv";
 import { guardarPostulante } from "./actions";
 
 type Postulante = {
@@ -29,6 +30,7 @@ type Postulante = {
   estado_id?: number | null;
   selector_id?: number | null;
   guardado_en_pool?: boolean;
+  cv_path?: string | null;
 };
 
 function Campo({
@@ -61,9 +63,10 @@ function Campo({
 export async function PostulanteForm({ postulante }: { postulante?: Postulante }) {
   const supabase = await createClient();
 
-  const [{ data: estados }, { data: selectores }] = await Promise.all([
+  const [{ data: estados }, { data: selectores }, cvUrl] = await Promise.all([
     supabase.from("estados_postulante").select("id, nombre").order("orden"),
     supabase.from("selectores").select("id, nombre, apellido").eq("estado", "activo").order("nombre"),
+    postulante?.cv_path ? urlFirmadaCv(postulante.cv_path) : Promise.resolve(null),
   ]);
 
   return (
@@ -201,8 +204,31 @@ export async function PostulanteForm({ postulante }: { postulante?: Postulante }
 
       <section>
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
-          Enlaces
+          CV y enlaces
         </h2>
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">
+              {postulante?.cv_path ? "Reemplazar CV" : "CV (PDF o Word)"}
+            </span>
+            <input
+              type="file"
+              name="cv"
+              accept=".pdf,.doc,.docx"
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-700"
+            />
+          </label>
+          {cvUrl && (
+            <a
+              href={cvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+            >
+              📄 Ver CV actual
+            </a>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Campo label="LinkedIn" name="linkedin_url" defaultValue={postulante?.linkedin_url} />
           <Campo label="Portfolio" name="portfolio_url" defaultValue={postulante?.portfolio_url} />
