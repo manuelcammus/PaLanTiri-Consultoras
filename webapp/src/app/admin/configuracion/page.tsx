@@ -1,20 +1,37 @@
 import { createClient } from "@/lib/supabase/server";
-import { actualizarAlerta, actualizarEstadoBusqueda, actualizarEstadoPostulante } from "./actions";
+import { googleConectado, googleConfigurado } from "@/lib/google/oauth";
+import {
+  actualizarAlerta,
+  actualizarEstadoBusqueda,
+  actualizarEstadoPostulante,
+  desconectarGoogleAction,
+} from "./actions";
 
-export default async function ConfiguracionPage() {
+export default async function ConfiguracionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ google?: string }>;
+}) {
+  const { google } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: alertas }, { data: estadosBusqueda }, { data: estadosPostulante }, { data: emails }] =
-    await Promise.all([
-      supabase.from("configuracion_alertas").select("*").order("evento_codigo"),
-      supabase.from("estados_busqueda").select("*").order("orden"),
-      supabase.from("estados_postulante").select("*").order("orden"),
-      supabase
-        .from("email_messages")
-        .select("id, destinatario_email, asunto, estado, fecha_creacion, error_log")
-        .order("fecha_creacion", { ascending: false })
-        .limit(20),
-    ]);
+  const [
+    { data: alertas },
+    { data: estadosBusqueda },
+    { data: estadosPostulante },
+    { data: emails },
+    hayGoogle,
+  ] = await Promise.all([
+    supabase.from("configuracion_alertas").select("*").order("evento_codigo"),
+    supabase.from("estados_busqueda").select("*").order("orden"),
+    supabase.from("estados_postulante").select("*").order("orden"),
+    supabase
+      .from("email_messages")
+      .select("id, destinatario_email, asunto, estado, fecha_creacion, error_log")
+      .order("fecha_creacion", { ascending: false })
+      .limit(20),
+    googleConectado(),
+  ]);
 
   const ESTADO_EMAIL_COLOR: Record<string, string> = {
     enviado: "bg-emerald-100 text-emerald-700",
@@ -28,6 +45,69 @@ export default async function ConfiguracionPage() {
         <h1 className="text-2xl font-bold text-slate-900">Configuración</h1>
         <p className="mt-1 text-slate-500">Alertas automáticas y estados del flujo de trabajo.</p>
       </div>
+
+      {google === "conectado" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          ✅ Cuenta de Google conectada correctamente.
+        </div>
+      )}
+      {google === "error" && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          ❌ No se pudo conectar con Google. Probá de nuevo o revisá la configuración del cliente OAuth.
+        </div>
+      )}
+      {google === "sin_config" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          ⚠️ Faltan las variables GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET en Vercel.
+        </div>
+      )}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Integración con Google
+        </h2>
+        {hayGoogle ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-emerald-700">🟢 Cuenta de Google conectada</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Al agendar una entrevista se crea el evento en Calendar con sala de Meet y se invita
+                por email al candidato y al entrevistador.
+              </p>
+            </div>
+            <form action={desconectarGoogleAction}>
+              <button
+                type="submit"
+                className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+              >
+                Desconectar
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-slate-700">⚪ Sin conectar</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Conectá la cuenta de Google de la consultora para crear eventos de Calendar con
+                Google Meet automáticamente al agendar entrevistas.
+              </p>
+            </div>
+            {googleConfigurado() ? (
+              <a
+                href="/api/google/conectar"
+                className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              >
+                Conectar con Google
+              </a>
+            ) : (
+              <p className="text-xs text-amber-600">
+                Configurá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel para habilitar el botón.
+              </p>
+            )}
+          </div>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">

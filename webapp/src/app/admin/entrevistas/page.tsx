@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { googleConectado } from "@/lib/google/oauth";
 import { agendarEntrevista, registrarResultado, eliminarEntrevista } from "./actions";
 
 const TIPO_LABEL: Record<string, string> = {
@@ -67,7 +68,7 @@ function descripcionPostulacion(e: EntrevistaRow) {
 export default async function EntrevistasPage() {
   const supabase = await createClient();
 
-  const [{ data: entrevistas }, { data: postulacionesActivas }] = await Promise.all([
+  const [{ data: entrevistas }, { data: postulacionesActivas }, hayGoogle] = await Promise.all([
     supabase
       .from("entrevistas_agendadas")
       .select(
@@ -81,6 +82,7 @@ export default async function EntrevistasPage() {
       .select("id, postulantes(nombre, apellido), perfiles_busqueda(titulo_puesto, empresas(nombre))")
       .in("estado", ["enviada", "recibida", "entrevista", "oferta", "aceptada_postulante"])
       .order("fecha_envio", { ascending: false }),
+    googleConectado(),
   ]);
 
   const todas = (entrevistas ?? []) as unknown as EntrevistaRow[];
@@ -178,7 +180,7 @@ export default async function EntrevistasPage() {
             <input
               type="url"
               name="google_meet_url"
-              placeholder="https://meet.google.com/..."
+              placeholder={hayGoogle ? "Dejar vacío para generarlo automático" : "https://meet.google.com/..."}
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
@@ -190,10 +192,27 @@ export default async function EntrevistasPage() {
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
-          <div className="flex items-end sm:col-span-2 lg:col-span-3">
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3">
+            {hayGoogle ? (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="crear_meet"
+                  defaultChecked
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="font-medium text-slate-700">
+                  Crear evento en Google Calendar con Meet e invitar por email
+                </span>
+              </label>
+            ) : (
+              <p className="text-xs text-slate-400">
+                💡 Conectá Google en Configuración para crear el evento de Calendar y el Meet automáticamente.
+              </p>
+            )}
             <button
               type="submit"
-              className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              className="ml-auto rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
             >
               Agendar entrevista
             </button>

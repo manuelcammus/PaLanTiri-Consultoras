@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { desconectarGoogle } from "@/lib/google/oauth";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -21,6 +22,11 @@ export async function actualizarAlerta(formData: FormData) {
   const { error } = await supabase.from("configuracion_alertas").update(data).eq("id", id);
   if (error) throw new Error(error.message);
 
+  revalidatePath("/admin/configuracion");
+}
+
+export async function desconectarGoogleAction() {
+  await desconectarGoogle();
   revalidatePath("/admin/configuracion");
 }
 
