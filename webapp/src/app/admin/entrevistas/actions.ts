@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getConsultora } from "@/lib/consultora";
 import { crearEventoEntrevista, eliminarEvento } from "@/lib/google/calendar";
 
 const TIPO_LABEL: Record<string, string> = {
@@ -72,12 +73,14 @@ export async function agendarEntrevista(formData: FormData) {
       empresas: { nombre: string } | null;
     } | null;
 
+    const consultora = await getConsultora();
+
     const evento = await crearEventoEntrevista({
       titulo: `Entrevista ${TIPO_LABEL[tipo] ?? tipo}: ${candidato?.nombre ?? ""} ${candidato?.apellido ?? ""} — ${perfil?.titulo_puesto ?? ""}`,
       descripcion: [
         perfil?.empresas?.nombre && `Empresa: ${perfil.empresas.nombre}`,
         entrevistador && `Entrevistador: ${entrevistador}`,
-        "Agendada desde Palantiri Consultoras.",
+        `Agendada desde ${consultora.nombre}.`,
       ]
         .filter(Boolean)
         .join("\n"),

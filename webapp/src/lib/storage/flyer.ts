@@ -2,15 +2,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const EXTENSIONES_PERMITIDAS = ["png", "jpg", "jpeg", "webp"];
 
-// Sube el flyer promocional de una búsqueda al bucket público "flyers" y
-// devuelve la ruta para guardar en perfiles_busqueda.flyer_imagen_path.
-export async function subirFlyer(archivo: File): Promise<string> {
+// Sube una imagen al bucket público "flyers" y devuelve su ruta.
+// Se usa para flyers de búsquedas (carpeta busquedas/) y para el logo de la
+// consultora (carpeta branding/).
+export async function subirFlyer(archivo: File, carpeta = "busquedas"): Promise<string> {
   const extension = archivo.name.split(".").pop()?.toLowerCase() ?? "";
   if (!EXTENSIONES_PERMITIDAS.includes(extension)) {
-    throw new Error("El flyer debe ser una imagen PNG, JPG o WebP.");
+    throw new Error("La imagen debe ser PNG, JPG o WebP.");
   }
 
-  const ruta = `busquedas/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${extension}`;
+  const ruta = `${carpeta}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${extension}`;
   const admin = createAdminClient();
   const { error } = await admin.storage.from("flyers").upload(ruta, archivo, {
     contentType: archivo.type || "image/png",

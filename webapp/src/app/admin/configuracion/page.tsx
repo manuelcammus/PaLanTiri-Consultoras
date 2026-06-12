@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { getConsultora } from "@/lib/consultora";
 import { googleConectado, googleConfigurado } from "@/lib/google/oauth";
 import {
   actualizarAlerta,
   actualizarEstadoBusqueda,
   actualizarEstadoPostulante,
   desconectarGoogleAction,
+  guardarIdentidad,
 } from "./actions";
 
 export default async function ConfiguracionPage({
@@ -39,6 +41,8 @@ export default async function ConfiguracionPage({
     .order("fecha_creacion", { ascending: false })
     .limit(20);
 
+  const consultora = await getConsultora();
+
   const ESTADO_EMAIL_COLOR: Record<string, string> = {
     enviado: "bg-emerald-100 text-emerald-700",
     pendiente: "bg-amber-100 text-amber-700",
@@ -67,6 +71,79 @@ export default async function ConfiguracionPage({
           ⚠️ Faltan las variables GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET en Vercel.
         </div>
       )}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Identidad de la consultora
+        </h2>
+        <p className="mb-4 text-xs text-slate-400">
+          El nombre y el logo que se muestran en el login, los paneles y el portal de selectores.
+        </p>
+        <form action={guardarIdentidad} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">Nombre de la consultora</span>
+            <input
+              type="text"
+              name="nombre"
+              required
+              defaultValue={consultora.nombre}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">Teléfono</span>
+            <input
+              type="text"
+              name="telefono"
+              defaultValue={consultora.telefono}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">Email de contacto</span>
+            <input
+              type="email"
+              name="email_contacto"
+              defaultValue={consultora.email_contacto}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">Sitio web</span>
+            <input
+              type="text"
+              name="sitio_web"
+              defaultValue={consultora.sitio_web}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium text-slate-700">
+                {consultora.logo_path ? "Reemplazar logo" : "Logo (PNG, JPG o WebP)"}
+              </span>
+              <input
+                type="file"
+                name="logo"
+                accept=".png,.jpg,.jpeg,.webp"
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-700"
+              />
+            </label>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={consultora.logoUrl}
+              alt={consultora.nombre}
+              className="h-16 w-16 rounded-xl border border-slate-200 object-contain"
+            />
+            <button
+              type="submit"
+              className="ml-auto rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              Guardar identidad
+            </button>
+          </div>
+        </form>
+      </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">

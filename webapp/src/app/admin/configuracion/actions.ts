@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { desconectarGoogle } from "@/lib/google/oauth";
+import { subirFlyer } from "@/lib/storage/flyer";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -23,6 +24,26 @@ export async function actualizarAlerta(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/configuracion");
+}
+
+export async function guardarIdentidad(formData: FormData) {
+  const supabase = await createClient();
+
+  const logo = formData.get("logo") as File | null;
+  const logoPath = logo && logo.size > 0 ? await subirFlyer(logo, "branding") : null;
+
+  const { error } = await supabase.from("configuracion_consultora").upsert({
+    id: 1,
+    nombre: val(formData, "nombre") || "Mi Consultora",
+    telefono: val(formData, "telefono"),
+    email_contacto: val(formData, "email_contacto"),
+    sitio_web: val(formData, "sitio_web"),
+    ...(logoPath ? { logo_path: logoPath } : {}),
+    actualizado_el: new Date().toISOString(),
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/", "layout");
 }
 
 export async function desconectarGoogleAction() {
