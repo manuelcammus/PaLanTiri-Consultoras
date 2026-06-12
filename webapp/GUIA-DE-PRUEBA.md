@@ -121,6 +121,8 @@ Flujo válido: enviada → recibida → entrevista → oferta → aceptada → *
   motivo → ✔️ dispara `garantia_ejecutada` con el monto de devolución
   (clawback) por email al selector.
 - Si lo supera: marcarla **Completada**.
+- ✔️ Las garantías que vencen en los próximos 15 días aparecen como **alerta
+  ámbar en el Dashboard**, con los días restantes de cada una.
 
 ## 12. KPIs
 
@@ -132,20 +134,26 @@ mensuales y tasa de garantías. ✔️ Con los datos de esta prueba ya se puebla
 
 **Configuración** (abajo): "Últimos emails enviados" y "Últimos WhatsApp"
 con estado de cada uno (verde enviado / ámbar pendiente / rojo error — el
-error se ve pasando el mouse).
+error se ve pasando el mouse). Además:
+
+- **Encolar WhatsApp de prueba**: ponés un teléfono (formato libre) y un
+  mensaje → queda en cola para que el worker lo mande.
+- **Reintentar**: los mensajes en error tienen botón para volver a la cola.
+- ⚠️ Si hay pendientes hace más de 15 minutos, aparece un aviso de que el
+  worker está apagado.
+- Los emails salen con plantilla con la marca de la consultora y la firma
+  "Un producto de Palantiri Consultoras".
 
 ## 14. WhatsApp (worker local)
 
 Los WhatsApp quedan "pendiente" hasta que el worker corre en tu PC:
 
-```
-cd worker
-pip install -r requirements.txt   (solo la primera vez)
-python whatsapp_worker_supabase.py
-```
-
-Primera vez: escanear QR con el teléfono de la consultora. Dejar la ventana
-abierta. ✔️ Los pendientes salen en segundos y pasan a "enviado".
+1. Doble click en **`worker\iniciar-whatsapp.bat`** (instala lo necesario la
+   primera vez).
+2. Primera vez: escanear el QR con el teléfono de la consultora
+   (WhatsApp → Dispositivos vinculados).
+3. Dejar la ventana abierta. ✔️ Los pendientes salen en segundos y pasan a
+   "enviado".
 
 ## 15. Consola Palantiri (solo super_admin)
 
@@ -173,6 +181,13 @@ activar/desactivar y editar.
 | `backup-bases.yml` | Todas las noches (02:30 AR) | `pg_dump` de cada base, cifrado AES-256, guardado 30 días como artefacto. Requiere secrets `BACKUP_PASSPHRASE` y `SUPABASE_DB_URL_<INSTANCIA>`. |
 
 Se ven/corren a mano en GitHub → pestaña **Actions**.
+
+## Prueba en el celular
+
+Abrí la app desde el teléfono: tanto el panel como el portal muestran una
+**barra de navegación superior** con todos los accesos (la barra lateral es
+solo para pantallas grandes). Probá especialmente el portal del selector,
+que es el que más se usa desde el móvil.
 
 ## Limitaciones conocidas (estado actual)
 
