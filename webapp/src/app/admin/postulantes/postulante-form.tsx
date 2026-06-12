@@ -63,7 +63,7 @@ export async function PostulanteForm({ postulante }: { postulante?: Postulante }
 
   const [{ data: estados }, { data: selectores }] = await Promise.all([
     supabase.from("estados_postulante").select("id, nombre").order("orden"),
-    supabase.from("selectores").select("id, profiles(nombre, apellido)").eq("estado", "activo"),
+    supabase.from("selectores").select("id, nombre, apellido").eq("estado", "activo").order("nombre"),
   ]);
 
   return (
@@ -238,14 +238,11 @@ export async function PostulanteForm({ postulante }: { postulante?: Postulante }
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">Sin asignar</option>
-              {(selectores ?? []).map((s) => {
-                const profile = s.profiles as unknown as { nombre?: string; apellido?: string } | null;
-                return (
-                  <option key={s.id} value={s.id}>
-                    {`${profile?.nombre ?? ""} ${profile?.apellido ?? ""}`.trim() || `Selector #${s.id}`}
-                  </option>
-                );
-              })}
+              {(selectores ?? []).map((s) => (
+                <option key={s.id} value={s.id}>
+                  {`${s.nombre ?? ""} ${s.apellido ?? ""}`.trim() || `Selector #${s.id}`}
+                </option>
+              ))}
             </select>
           </label>
         </div>

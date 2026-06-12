@@ -7,7 +7,7 @@ export default async function BusquedasPage() {
   const { data: busquedas } = await supabase
     .from("perfiles_busqueda")
     .select(
-      "id, titulo_puesto, nivel, prioridad, cantidad_posiciones, fecha_creacion, empresas(nombre), estados_busqueda(nombre, color), selectores(profile_id, profiles(nombre, apellido))"
+      "id, titulo_puesto, nivel, prioridad, cantidad_posiciones, fecha_creacion, empresas(nombre), estados_busqueda(nombre, color), selectores(nombre, apellido)"
     )
     .order("fecha_creacion", { ascending: false });
 
@@ -45,13 +45,13 @@ export default async function BusquedasPage() {
               const row = b as unknown as {
                 empresas: { nombre: string } | null;
                 estados_busqueda: { nombre: string; color: string } | null;
-                selectores: { profiles: { nombre?: string; apellido?: string } | null } | null;
+                selectores: { nombre?: string; apellido?: string } | null;
               };
               const empresa = row.empresas?.nombre ?? "—";
               const estado = row.estados_busqueda;
-              const selectorProfile = row.selectores?.profiles;
-              const selectorNombre = selectorProfile
-                ? `${selectorProfile.nombre ?? ""} ${selectorProfile.apellido ?? ""}`.trim()
+              const selector = row.selectores;
+              const selectorNombre = selector
+                ? `${selector.nombre ?? ""} ${selector.apellido ?? ""}`.trim()
                 : "Sin asignar";
 
               return (
