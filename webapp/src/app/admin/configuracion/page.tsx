@@ -33,6 +33,12 @@ export default async function ConfiguracionPage({
     googleConectado(),
   ]);
 
+  const { data: whatsapps } = await supabase
+    .from("whatsapp_messages")
+    .select("id, numero_destino, mensaje, estado, fecha_creacion, error_log")
+    .order("fecha_creacion", { ascending: false })
+    .limit(20);
+
   const ESTADO_EMAIL_COLOR: Record<string, string> = {
     enviado: "bg-emerald-100 text-emerald-700",
     pendiente: "bg-amber-100 text-amber-700",
@@ -272,6 +278,56 @@ export default async function ConfiguracionPage({
                 <tr>
                   <td colSpan={4} className="px-3 py-8 text-center text-slate-400">
                     Todavía no se enviaron emails automáticos.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Últimos WhatsApp
+        </h2>
+        <p className="mb-4 text-xs text-slate-400">
+          Los mensajes &quot;pendiente&quot; se envían cuando el worker de WhatsApp está corriendo en
+          la PC de la consultora.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Fecha</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Número</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Mensaje</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {(whatsapps ?? []).map((w) => (
+                <tr key={w.id}>
+                  <td className="px-3 py-2 text-slate-500">
+                    {new Date(w.fecha_creacion).toLocaleString("es-AR")}
+                  </td>
+                  <td className="px-3 py-2 text-slate-600">{w.numero_destino}</td>
+                  <td className="max-w-md truncate px-3 py-2 text-slate-600" title={w.mensaje}>
+                    {w.mensaje}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${ESTADO_EMAIL_COLOR[w.estado] ?? ""}`}
+                      title={w.error_log ?? ""}
+                    >
+                      {w.estado}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {(whatsapps ?? []).length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-3 py-8 text-center text-slate-400">
+                    Todavía no se encolaron mensajes de WhatsApp.
                   </td>
                 </tr>
               )}

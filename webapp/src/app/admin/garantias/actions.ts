@@ -42,14 +42,22 @@ export async function actualizarGarantia(formData: FormData) {
     const { data: comision } = await supabase
       .from("comisiones")
       .select(
-        "monto_devolucion, selectores!comisiones_selector_id_fkey(nombre, email), selector_sourcing:selectores!comisiones_selector_sourcing_id_fkey(nombre, email), postulaciones(postulantes(nombre, apellido), perfiles_busqueda(titulo_puesto, empresas(nombre)))"
+        "monto_devolucion, selectores!comisiones_selector_id_fkey(nombre, email, telefono), selector_sourcing:selectores!comisiones_selector_sourcing_id_fkey(nombre, email, telefono), postulaciones(postulantes(nombre, apellido), perfiles_busqueda(titulo_puesto, empresas(nombre)))"
       )
       .eq("postulacion_id", actual.postulacion_id)
       .maybeSingle();
 
     if (comision) {
-      const selector = comision.selectores as unknown as { nombre: string; email: string } | null;
-      const sourcing = comision.selector_sourcing as unknown as { nombre: string; email: string } | null;
+      const selector = comision.selectores as unknown as {
+        nombre: string;
+        email: string;
+        telefono: string;
+      } | null;
+      const sourcing = comision.selector_sourcing as unknown as {
+        nombre: string;
+        email: string;
+        telefono: string;
+      } | null;
       const postulacion = comision.postulaciones as unknown as {
         postulantes: { nombre: string; apellido: string } | null;
         perfiles_busqueda: { titulo_puesto: string; empresas: { nombre: string } | null } | null;
@@ -67,8 +75,8 @@ export async function actualizarGarantia(formData: FormData) {
       await notificarEvento({
         eventoCodigo: "garantia_ejecutada",
         destinatarios: [
-          { email: selector?.email, nombre: selector?.nombre, variables: { ...variablesBase, nombre_selector: selector?.nombre ?? "" } },
-          { email: sourcing?.email, nombre: sourcing?.nombre, variables: { ...variablesBase, nombre_selector: sourcing?.nombre ?? "" } },
+          { email: selector?.email, nombre: selector?.nombre, telefono: selector?.telefono, variables: { ...variablesBase, nombre_selector: selector?.nombre ?? "" } },
+          { email: sourcing?.email, nombre: sourcing?.nombre, telefono: sourcing?.telefono, variables: { ...variablesBase, nombre_selector: sourcing?.nombre ?? "" } },
         ],
       });
     }

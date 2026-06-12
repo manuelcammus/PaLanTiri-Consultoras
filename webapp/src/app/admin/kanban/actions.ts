@@ -31,7 +31,7 @@ export async function moverPostulacion(formData: FormData) {
     const { data: postulacion } = await supabase
       .from("postulaciones")
       .select(
-        "postulantes(nombre, apellido), perfiles_busqueda(titulo_puesto, empresas(nombre)), selectores(nombre, email)"
+        "postulantes(nombre, apellido), perfiles_busqueda(titulo_puesto, empresas(nombre)), selectores(nombre, email, telefono)"
       )
       .eq("id", id)
       .single();
@@ -41,7 +41,11 @@ export async function moverPostulacion(formData: FormData) {
       titulo_puesto: string;
       empresas: { nombre: string } | null;
     } | null;
-    const selector = postulacion?.selectores as unknown as { nombre: string; email: string } | null;
+    const selector = postulacion?.selectores as unknown as {
+      nombre: string;
+      email: string;
+      telefono: string;
+    } | null;
 
     await notificarEvento({
       eventoCodigo: "candidato_contratado",
@@ -49,6 +53,7 @@ export async function moverPostulacion(formData: FormData) {
         {
           email: selector?.email,
           nombre: selector?.nombre,
+          telefono: selector?.telefono,
           variables: {
             nombre_selector: selector?.nombre ?? "",
             candidato_nombre: `${postulante?.nombre ?? ""} ${postulante?.apellido ?? ""}`.trim(),

@@ -87,7 +87,7 @@ export async function asignarSelector(formData: FormData) {
   if (error) throw new Error(error.message);
 
   const [{ data: selector }, { data: perfil }] = await Promise.all([
-    supabase.from("selectores").select("nombre, email").eq("id", selectorId).single(),
+    supabase.from("selectores").select("nombre, email, telefono").eq("id", selectorId).single(),
     supabase
       .from("perfiles_busqueda")
       .select("titulo_puesto, empresas(nombre)")
@@ -102,6 +102,7 @@ export async function asignarSelector(formData: FormData) {
       {
         email: selector?.email,
         nombre: selector?.nombre,
+        telefono: selector?.telefono,
         variables: {
           nombre_selector: selector?.nombre ?? "",
           titulo_puesto: perfil?.titulo_puesto ?? "",
