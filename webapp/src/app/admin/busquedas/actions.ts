@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { notificarEvento } from "@/lib/email/queue";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -79,6 +80,31 @@ export async function asignarSelector(formData: FormData) {
     fecha_limite_entrega: fechaLimite,
   });
   if (error) throw new Error(error.message);
+
+  const [{ data: selector }, { data: perfil }] = await Promise.all([
+    supabase.from("selectores").select("nombre, email").eq("id", selectorId).single(),
+    supabase
+      .from("perfiles_busqueda")
+      .select("titulo_puesto, empresas(nombre)")
+      .eq("id", perfilBusquedaId)
+      .single(),
+  ]);
+  const empresa = perfil?.empresas as unknown as { nombre: string } | null;
+
+  await notificarEvento({
+    eventoCodigo: "nueva_busqueda",
+    destinatarios: [
+      {
+        email: selector?.email,
+        nombre: selector?.nombre,
+        variables: {
+          nombre_selector: selector?.nombre ?? "",
+          titulo_puesto: perfil?.titulo_puesto ?? "",
+          empresa_nombre: empresa?.nombre ?? "",
+        },
+      },
+    ],
+  });
 
   revalidatePath(`/admin/busquedas/${perfilBusquedaId}`);
 }

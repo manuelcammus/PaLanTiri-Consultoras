@@ -4,11 +4,23 @@ import { actualizarAlerta, actualizarEstadoBusqueda, actualizarEstadoPostulante 
 export default async function ConfiguracionPage() {
   const supabase = await createClient();
 
-  const [{ data: alertas }, { data: estadosBusqueda }, { data: estadosPostulante }] = await Promise.all([
-    supabase.from("configuracion_alertas").select("*").order("evento_codigo"),
-    supabase.from("estados_busqueda").select("*").order("orden"),
-    supabase.from("estados_postulante").select("*").order("orden"),
-  ]);
+  const [{ data: alertas }, { data: estadosBusqueda }, { data: estadosPostulante }, { data: emails }] =
+    await Promise.all([
+      supabase.from("configuracion_alertas").select("*").order("evento_codigo"),
+      supabase.from("estados_busqueda").select("*").order("orden"),
+      supabase.from("estados_postulante").select("*").order("orden"),
+      supabase
+        .from("email_messages")
+        .select("id, destinatario_email, asunto, estado, fecha_creacion, error_log")
+        .order("fecha_creacion", { ascending: false })
+        .limit(20),
+    ]);
+
+  const ESTADO_EMAIL_COLOR: Record<string, string> = {
+    enviado: "bg-emerald-100 text-emerald-700",
+    pendiente: "bg-amber-100 text-amber-700",
+    error: "bg-rose-100 text-rose-700",
+  };
 
   return (
     <div className="space-y-8">
@@ -141,6 +153,50 @@ export default async function ConfiguracionPage() {
               </button>
             </form>
           ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Últimos emails enviados
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Fecha</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Destinatario</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Asunto</th>
+                <th className="px-3 py-2 text-left font-semibold text-slate-600">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {(emails ?? []).map((e) => (
+                <tr key={e.id}>
+                  <td className="px-3 py-2 text-slate-500">
+                    {new Date(e.fecha_creacion).toLocaleString("es-AR")}
+                  </td>
+                  <td className="px-3 py-2 text-slate-600">{e.destinatario_email}</td>
+                  <td className="px-3 py-2 text-slate-600">{e.asunto}</td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${ESTADO_EMAIL_COLOR[e.estado] ?? ""}`}
+                      title={e.error_log ?? ""}
+                    >
+                      {e.estado}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {(emails ?? []).length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-3 py-8 text-center text-slate-400">
+                    Todavía no se enviaron emails automáticos.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>
