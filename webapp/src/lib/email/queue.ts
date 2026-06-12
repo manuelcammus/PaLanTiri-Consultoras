@@ -41,7 +41,7 @@ export async function notificarEvento({
 
       const cuerpo = renderPlantilla(config.plantilla_email, dest.variables);
 
-      const { data: mensaje } = await admin
+      const { data: mensaje, error: errorInsert } = await admin
         .from("email_messages")
         .insert({
           destinatario_email: dest.email,
@@ -53,7 +53,13 @@ export async function notificarEvento({
         .select("id")
         .single();
 
-      if (!mensaje) continue;
+      if (errorInsert || !mensaje) {
+        console.error(
+          `notificarEvento(${eventoCodigo}): no se pudo registrar el email en la cola`,
+          errorInsert
+        );
+        continue;
+      }
 
       try {
         await enviarEmail({
