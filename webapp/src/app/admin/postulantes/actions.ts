@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { subirCv } from "@/lib/storage/cv";
+import { extraerTextoCv } from "@/lib/storage/extraer-texto";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -26,9 +27,11 @@ export async function guardarPostulante(formData: FormData) {
 
   const cv = formData.get("cv") as File | null;
   const cvPath = cv && cv.size > 0 ? await subirCv(cv, "admin") : null;
+  const cvTexto = cvPath && cv ? await extraerTextoCv(cv) : "";
 
   const data = {
     ...(cvPath ? { cv_path: cvPath } : {}),
+    ...(cvTexto ? { cv_texto_extraido: cvTexto } : {}),
     nombre: val(formData, "nombre"),
     apellido: val(formData, "apellido"),
     email: val(formData, "email"),

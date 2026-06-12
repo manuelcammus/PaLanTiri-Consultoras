@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { notificarEvento } from "@/lib/email/queue";
+import { subirFlyer } from "@/lib/storage/flyer";
 
 function val(formData: FormData, key: string): string {
   return (formData.get(key) as string | null)?.trim() ?? "";
@@ -24,7 +25,11 @@ export async function guardarBusqueda(formData: FormData) {
 
   const id = val(formData, "id");
 
+  const flyer = formData.get("flyer") as File | null;
+  const flyerPath = flyer && flyer.size > 0 ? await subirFlyer(flyer) : null;
+
   const data = {
+    ...(flyerPath ? { flyer_imagen_path: flyerPath } : {}),
     empresa_id: Number(val(formData, "empresa_id")),
     titulo_puesto: val(formData, "titulo_puesto"),
     descripcion: val(formData, "descripcion"),

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { urlPublicaFlyer } from "@/lib/storage/flyer";
 import { guardarBusqueda } from "./actions";
 
 type Busqueda = {
@@ -19,6 +20,7 @@ type Busqueda = {
   prioridad?: string;
   fecha_vencimiento?: string | null;
   notas_internas?: string;
+  flyer_imagen_path?: string | null;
 };
 
 function Campo({
@@ -161,6 +163,33 @@ export async function BusquedaForm({ busqueda }: { busqueda?: Busqueda }) {
             />
             <span className="font-medium text-slate-700">Modalidad remota</span>
           </label>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          Flyer promocional
+        </h2>
+        <div className="flex flex-wrap items-start gap-4">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-slate-700">
+              {busqueda?.flyer_imagen_path ? "Reemplazar flyer" : "Imagen (PNG, JPG o WebP)"}
+            </span>
+            <input
+              type="file"
+              name="flyer"
+              accept=".png,.jpg,.jpeg,.webp"
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-700"
+            />
+          </label>
+          {busqueda?.flyer_imagen_path && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={urlPublicaFlyer(busqueda.flyer_imagen_path)}
+              alt="Flyer actual de la búsqueda"
+              className="max-h-40 rounded-xl border border-slate-200 object-contain"
+            />
+          )}
         </div>
       </section>
 

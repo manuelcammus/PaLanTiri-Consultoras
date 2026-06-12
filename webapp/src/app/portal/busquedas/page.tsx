@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSelectorActual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { urlPublicaFlyer } from "@/lib/storage/flyer";
 import { responderAsignacion } from "./actions";
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -27,7 +28,7 @@ export default async function PortalBusquedasPage() {
   const { data: asignaciones } = await supabase
     .from("asignaciones_busqueda")
     .select(
-      "id, estado, fecha_limite_entrega, cantidad_postulantes_esperados, cantidad_postulantes_enviados, cantidad_contratados, perfiles_busqueda(id, titulo_puesto, nivel, areas, ubicacion_puesto, es_remoto, empresas(nombre))"
+      "id, estado, fecha_limite_entrega, cantidad_postulantes_esperados, cantidad_postulantes_enviados, cantidad_contratados, perfiles_busqueda(id, titulo_puesto, nivel, areas, ubicacion_puesto, es_remoto, flyer_imagen_path, empresas(nombre))"
     )
     .eq("selector_id", selector.id)
     .order("fecha_asignacion", { ascending: false });
@@ -48,11 +49,20 @@ export default async function PortalBusquedasPage() {
             areas: string;
             ubicacion_puesto: string;
             es_remoto: boolean;
+            flyer_imagen_path: string | null;
             empresas: { nombre: string } | null;
           } | null;
 
           return (
             <div key={a.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              {perfil?.flyer_imagen_path && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={urlPublicaFlyer(perfil.flyer_imagen_path)}
+                  alt={`Flyer de ${perfil.titulo_puesto}`}
+                  className="mb-4 max-h-48 w-full rounded-xl border border-slate-100 object-cover"
+                />
+              )}
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-semibold text-slate-900">{perfil?.titulo_puesto}</p>
