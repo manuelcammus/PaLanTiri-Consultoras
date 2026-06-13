@@ -21,11 +21,11 @@ const NAV_STAFF: NavItem[] = [
 ];
 
 const NAV_ADMIN: NavItem[] = [
+  { href: "/admin/usuarios", label: "Usuarios", icon: "🔐" },
   { href: "/admin/configuracion", label: "Configuración", icon: "⚙️" },
 ];
 
 const NAV_SUPER: NavItem[] = [
-  { href: "/admin/usuarios", label: "Usuarios", icon: "🔐" },
   { href: "/admin/consola", label: "Consola Palantiri", icon: "🛰️" },
 ];
 

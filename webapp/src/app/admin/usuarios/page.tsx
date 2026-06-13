@@ -1,19 +1,40 @@
 import { createClient } from "@/lib/supabase/server";
-import { ROL_LABELS, type Rol } from "@/lib/types";
+import { getProfile } from "@/lib/auth";
+import { ROL_LABELS, esSuperAdmin, type Rol } from "@/lib/types";
 import { actualizarUsuario, eliminarUsuario, crearUsuario } from "./actions";
+
+// Opciones de rol que ve cada quién en los desplegables.
+const ROLES_SUPER: Rol[] = ["super_admin", "admin", "consultora", "selector"];
+const ROLES_ADMIN: Rol[] = ["consultora", "selector"];
 
 export default async function UsuariosPage() {
   const supabase = await createClient();
+  const perfil = await getProfile();
+  const puedeGestionarTodo = esSuperAdmin(perfil?.rol);
+  const rolesAsignables = puedeGestionarTodo ? ROLES_SUPER : ROLES_ADMIN;
+
   const { data: usuarios } = await supabase
     .from("profiles")
     .select("id, email, nombre, apellido, telefono, rol, activo")
     .order("created_at", { ascending: false });
 
+  // Un admin no puede tocar cuentas admin/super_admin: son del super_admin.
+  const esCuentaProtegida = (rol: Rol) =>
+    !puedeGestionarTodo && (rol === "super_admin" || rol === "admin");
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
-        <p className="mt-1 text-slate-500">Administración de cuentas y roles de acceso.</p>
+        <p className="mt-1 text-slate-500">
+          Administración de cuentas y roles de acceso.
+          {!puedeGestionarTodo && (
+            <span className="mt-1 block text-xs text-slate-400">
+              Podés dar de alta y administrar usuarios de la consultora y selectores. Los roles de
+              Administrador y Super Administrador los gestiona Palantiri.
+            </span>
+          )}
+        </p>
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -65,10 +86,11 @@ export default async function UsuariosPage() {
               defaultValue="selector"
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
-              <option value="super_admin">Super Administrador</option>
-              <option value="admin">Administrador</option>
-              <option value="consultora">Consultora</option>
-              <option value="selector">Selector</option>
+              {rolesAsignables.map((r) => (
+                <option key={r} value={r}>
+                  {ROL_LABELS[r]}
+                </option>
+              ))}
             </select>
           </label>
           <div className="flex items-end">
@@ -107,42 +129,49 @@ export default async function UsuariosPage() {
                 <td className="px-4 py-3 text-slate-600">{u.email}</td>
                 <td className="px-4 py-3 text-slate-600">{u.telefono}</td>
                 <td className="px-4 py-3">
-                  <details>
-                    <summary className="cursor-pointer text-xs font-medium text-indigo-600">
+                  {esCuentaProtegida(u.rol as Rol) ? (
+                    <span className="text-xs font-medium text-slate-500">
                       {ROL_LABELS[u.rol as Rol]}
-                    </summary>
-                    <form action={actualizarUsuario} className="mt-3 flex flex-col gap-2">
-                      <input type="hidden" name="id" value={u.id} />
-                      <input type="hidden" name="nombre" value={u.nombre} />
-                      <input type="hidden" name="apellido" value={u.apellido} />
-                      <input type="hidden" name="telefono" value={u.telefono ?? ""} />
-                      <select
-                        name="rol"
-                        defaultValue={u.rol}
-                        className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                      >
-                        <option value="super_admin">Super Administrador</option>
-                        <option value="admin">Administrador</option>
-                        <option value="consultora">Consultora</option>
-                        <option value="selector">Selector</option>
-                      </select>
-                      <label className="flex items-center gap-2 text-xs">
-                        <input
-                          type="checkbox"
-                          name="activo"
-                          defaultChecked={u.activo}
-                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        Activo
-                      </label>
-                      <button
-                        type="submit"
-                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-indigo-700"
-                      >
-                        Guardar
-                      </button>
-                    </form>
-                  </details>
+                    </span>
+                  ) : (
+                    <details>
+                      <summary className="cursor-pointer text-xs font-medium text-indigo-600">
+                        {ROL_LABELS[u.rol as Rol]}
+                      </summary>
+                      <form action={actualizarUsuario} className="mt-3 flex flex-col gap-2">
+                        <input type="hidden" name="id" value={u.id} />
+                        <input type="hidden" name="nombre" value={u.nombre} />
+                        <input type="hidden" name="apellido" value={u.apellido} />
+                        <input type="hidden" name="telefono" value={u.telefono ?? ""} />
+                        <select
+                          name="rol"
+                          defaultValue={u.rol}
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                        >
+                          {rolesAsignables.map((r) => (
+                            <option key={r} value={r}>
+                              {ROL_LABELS[r]}
+                            </option>
+                          ))}
+                        </select>
+                        <label className="flex items-center gap-2 text-xs">
+                          <input
+                            type="checkbox"
+                            name="activo"
+                            defaultChecked={u.activo}
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          Activo
+                        </label>
+                        <button
+                          type="submit"
+                          className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                        >
+                          Guardar
+                        </button>
+                      </form>
+                    </details>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <span
@@ -154,15 +183,17 @@ export default async function UsuariosPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <form action={eliminarUsuario}>
-                    <input type="hidden" name="id" value={u.id} />
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
-                    >
-                      Eliminar
-                    </button>
-                  </form>
+                  {!esCuentaProtegida(u.rol as Rol) && (
+                    <form action={eliminarUsuario}>
+                      <input type="hidden" name="id" value={u.id} />
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+                      >
+                        Eliminar
+                      </button>
+                    </form>
+                  )}
                 </td>
               </tr>
             ))}

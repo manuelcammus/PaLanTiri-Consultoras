@@ -70,7 +70,7 @@ TU INSTANCIA DE PALANTIRI (super_admin)
 | Rol | Dónde | Qué puede hacer | Quién lo asigna |
 |---|---|---|---|
 | **super_admin** | Panel de gestión | Todo. Ver todas las consultoras, crear usuarios, configurar integraciones, monitoreo | Sistema (al crear la instancia) |
-| **admin** | Panel de gestión | Casi todo: empresas, búsquedas, selectores, postulantes, talentos, kanban, comisiones, garantías, KPIs y **Configuración** (identidad, Google, alertas). NO: gestión de usuarios/roles ni Consola de monitoreo | super_admin |
+| **admin** | Panel de gestión | Casi todo: empresas, búsquedas, selectores, postulantes, talentos, kanban, comisiones, garantías, KPIs, **Configuración** (identidad, Google, alertas) y **Usuarios** de su consultora (alta/baja de roles *consultora* y *selector*). NO: asignar roles admin/super_admin ni la Consola de monitoreo | super_admin |
 | **usuario** | Panel de gestión | Lo mismo que admin pero SIN acceso a KPIs ni garantías. Para staff operativo | super_admin |
 | **selector** | Portal selector | Sus búsquedas, postulantes, comisiones, garantías. No ve a otros selectores | super_admin |
 | **(ninguno)** | Ninguno | Nada. Usuario creado pero sin acceso hasta que se asigne un rol | — |
@@ -542,9 +542,10 @@ La Consola es tu panel de control central. Solo vos (super_admin) la ves.
 
 ### Crear usuarios en una consultora
 
-1. Entrá a la consultora (desde Consola, tocá "Panel")
-2. Abrí **Usuarios** (solo ves si sos super_admin)
-3. **"+ Crear nuevo usuario"**
+**Quién entra a Usuarios:** el **admin** de la consultora (María) y el **super_admin** (Palantiri). Cada consultora se autogestiona: el admin da de alta y administra a su propio equipo.
+
+1. Abrí **Usuarios** en el menú lateral.
+2. **"+ Crear nuevo usuario"**
 
 Formulario:
 
@@ -556,11 +557,20 @@ Teléfono: [549 1234567890]
 Rol: [Selector ▼]
 ```
 
-**Roles disponibles:**
-- **admin:** acceso total al panel, sin usuarios ni config
-- **usuario:** panel pero sin KPIs ni garantías
-- **selector:** portal selector solo
-- (sin seleccionar): usuario bloqueado, sin acceso
+**Roles que puede asignar cada uno:**
+
+| Quién crea | Roles que ve en el desplegable |
+|---|---|
+| **admin** (María) | Consultora, Selector |
+| **super_admin** (Palantiri) | Super Administrador, Administrador, Consultora, Selector |
+
+Los roles **Administrador** y **Super Administrador** son exclusivos del super_admin: un admin no puede asignarlos ni modificar/eliminar cuentas que los tengan (aparecen como solo lectura). Es la protección anti-escalada.
+
+**Qué hace cada rol:**
+- **admin:** acceso total al panel, incluida Configuración y la gestión de usuarios *consultora*/*selector* de su consultora.
+- **consultora (usuario):** panel pero sin KPIs ni garantías.
+- **selector:** portal selector solo (al crear un selector con este rol, se vincula automáticamente con su registro de la tabla de selectores por email).
+- (sin seleccionar): usuario bloqueado, sin acceso.
 
 4. Tocá **"Crear usuario"**
 5. La app:
@@ -1023,7 +1033,7 @@ Tu rol no es `super_admin`. Probablemente eres `admin` o `usuario`.
 
 ### A. Glosario
 
-**Admin:** Persona con acceso al panel de gestión (empresas, búsquedas, selectores, etc.) pero no a usuarios ni configuración.
+**Admin:** Persona con acceso total al panel de gestión de su consultora, incluida Configuración y la gestión de usuarios *consultora*/*selector*. No puede asignar roles admin/super_admin ni ver la Consola de monitoreo.
 
 **Selector:** Reclutador externo que ve sus búsquedas asignadas, carga candidatos, sigue comisiones.
 
