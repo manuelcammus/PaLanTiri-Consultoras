@@ -12,15 +12,18 @@ se actualizan automáticamente con cada push a `main`).
 1. En [supabase.com/dashboard](https://supabase.com/dashboard) → **New project**.
    - Nombre: `consultora-<cliente>` · Región: South America (São Paulo) · Guardar la contraseña de la DB.
 2. **SQL Editor** → ejecutar **en orden** cada archivo de `webapp/supabase/migrations/`:
-   `0001_schema.sql` → `0002_rls.sql` → `0003_seed.sql` → `0004_storage.sql` → `0005_email_queue.sql` → `0006_configuracion_consultora.sql` → `0007_instancias_consultoras.sql`
+   `0001_schema.sql` → `0002_rls.sql` → `0003_seed.sql` → `0004_storage.sql` → `0005_email_queue.sql` → `0006_configuracion_consultora.sql` → `0007_instancias_consultoras.sql` → `0008_admin_gestiona_usuarios.sql`
 3. **Settings → API**: copiar `Project URL`, `anon` key y `service_role` key (se usan en el paso 2).
-4. Crear el usuario administrador del cliente: **Authentication → Users → Add user**
-   (email + contraseña temporal, marcar *Auto Confirm*). Luego en SQL Editor:
+4. Crear el usuario **admin del cliente** (es `admin`, NO `super_admin` — el super_admin es Palantiri):
+   **Authentication → Users → Add user → Create new user** (email + contraseña temporal,
+   marcar *Auto Confirm User*). El UUID no hace falta copiarlo. Luego en SQL Editor:
    ```sql
-   update public.profiles set rol = 'super_admin' where email = 'admin@cliente.com';
+   update public.profiles set rol = 'admin' where email = 'admin@cliente.com';
    ```
-5. (Captcha) **Authentication → Attack protection → Enable CAPTCHA**: proveedor
-   Turnstile + el *secret key* del paso 4 de Cloudflare.
+5. (Captcha — **paso obligatorio**) **Authentication → Attack protection → Enable CAPTCHA**:
+   proveedor Turnstile + el *secret key* del paso 4 de Cloudflare. Las **3 piezas** del CAPTCHA
+   tienen que estar puestas o nadie puede entrar: (1) secret key acá en Supabase, (2)
+   `NEXT_PUBLIC_TURNSTILE_SITE_KEY` en Vercel, (3) el dominio del cliente agregado al widget de Cloudflare.
 
 ## 2. Vercel (la web del cliente)
 
