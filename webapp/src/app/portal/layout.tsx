@@ -83,7 +83,11 @@ export default async function PortalLayout({
           {/* Marca del producto: no configurable */}
           <div className="mt-4 flex items-center justify-center gap-1.5 border-t border-slate-100 pt-3">
             <Image src="/logo-palantiri-icon.png" alt="Palantiri" width={14} height={14} className="object-contain opacity-60" />
-            <p className="text-[10px] text-slate-400">Un producto de Palantiri Consultoras</p>
+            <p className="text-center text-[10px] leading-tight text-slate-400">
+              <span className="font-semibold text-slate-500">Palantiri Consultoras</span>
+              <br />
+              Un producto de Palantiri Automat
+            </p>
           </div>
         </div>
       </aside>

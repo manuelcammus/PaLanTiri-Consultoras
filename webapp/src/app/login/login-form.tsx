@@ -152,7 +152,11 @@ export function LoginForm({ nombre, logoUrl }: { nombre: string; logoUrl: string
             height={14}
             className="object-contain opacity-80"
           />
-          <p className="text-xs text-indigo-200">Un producto de Palantiri Consultoras</p>
+          <p className="text-center text-xs leading-tight text-indigo-200">
+            <span className="font-semibold text-white">Palantiri Consultoras</span>
+            <br />
+            Un producto de Palantiri Automat
+          </p>
         </div>
       </div>
 

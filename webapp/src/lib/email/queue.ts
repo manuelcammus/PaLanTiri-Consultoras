@@ -18,7 +18,7 @@ function htmlConMarca(cuerpo: string, consultora: string) {
   return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto">
   <div style="background:#4338ca;color:#ffffff;padding:14px 20px;border-radius:12px 12px 0 0;font-size:15px;font-weight:bold">${consultora}</div>
   <div style="border:1px solid #e2e8f0;border-top:0;padding:20px;border-radius:0 0 12px 12px;color:#0f172a;font-size:14px;line-height:1.6">${cuerpo.replace(/\n/g, "<br>")}</div>
-  <p style="color:#94a3b8;font-size:11px;text-align:center;margin-top:10px">Un producto de Palantiri Consultoras</p>
+  <p style="color:#94a3b8;font-size:11px;text-align:center;margin-top:10px;line-height:1.4"><strong style="color:#64748b">Palantiri Consultoras</strong><br>Un producto de Palantiri Automat</p>
 </div>`;
 }
 
